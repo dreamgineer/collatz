@@ -4,10 +4,21 @@ import gleam/list
 import gleam/otp/task
 
 pub fn main() {
-  let n = reverse_traverse(400, 1, [])
-  print(n)
-  let l = collatz(n, 0)
-  print(l)
+  let input = 21
+  let assert Valid(t) = reverse_traverse(input, 1, [])
+  let g = reverse_guess(input, 1, [])
+  io.print("Traverse: ")
+  print(t)
+  io.print("Guess: ")
+  print(g)
+  let lt = collatz(t, 0)
+  let lg = collatz(g, 0)
+  io.print("Length: ")
+  print(lt)
+  io.print("        ")
+  print(lg)
+  assert lt == input
+  assert lg == input
 }
 
 pub fn collatz(n, l) {
@@ -31,18 +42,29 @@ pub fn reverse_guess(n: Int, c: Int, l: List(Int)) -> Int {
   }
 }
 
-pub fn reverse_traverse(n: Int, c: Int, l: List(Int)) -> Int {
+pub fn reverse_traverse(n: Int, c: Int, l: List(Int)) -> Sequence {
   case n {
-    0 -> c
+    0 -> Valid(c)
     _ -> {
-      let t = task.async(fn() { reverse_traverse(n - 1, c * 2, [c, ..l]) })
+      let t =
+        task.async(fn() {
+          case list.contains(l, c * 2) {
+            True -> Invalid
+            False -> reverse_traverse(n - 1, c * 2, [c, ..l])
+          }
+        })
       case c > 1 && { c - 1 } % 3 == 0 && !list.contains(l, { c - 1 } / 3) {
         True -> {
           let o1 = reverse_traverse(n - 1, { c - 1 } / 3, [c, ..l])
-          let o2 = task.await(t, 1_000)
-          int.min(o1, o2)
+          let o2 = task.await(t, 1000)
+          case o1, o2 {
+            Valid(i), Valid(j) -> Valid(int.min(i, j))
+            Valid(i), Invalid -> Valid(i)
+            Invalid, Valid(j) -> Valid(j)
+            Invalid, Invalid -> Invalid
+          }
         }
-        False -> task.await(t, 1_000)
+        False -> task.await(t, 1000)
       }
     }
   }
@@ -50,4 +72,9 @@ pub fn reverse_traverse(n: Int, c: Int, l: List(Int)) -> Int {
 
 fn print(n: Int) {
   io.println(int.to_string(n))
+}
+
+pub type Sequence {
+  Valid(Int)
+  Invalid
 }
