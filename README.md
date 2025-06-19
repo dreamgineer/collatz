@@ -1,20 +1,6 @@
 # collatz
 
-[![Package Version](https://img.shields.io/hexpm/v/collatz)](https://hex.pm/packages/collatz)
-[![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/collatz/)
-
-```sh
-gleam add collatz@1
-```
-```gleam
-import collatz
-
-pub fn main() -> Nil {
-  // TODO: An example of the project in use
-}
-```
-
-Further documentation can be found at <https://hexdocs.pm/collatz>.
+Experimental project to mess with Collatz Conjecture(Famous 3x+1 problem). Gleam/Erlang is chosen for the job because it use BigInt which is insanely accurate and it is very fast.
 
 ## Development
 
