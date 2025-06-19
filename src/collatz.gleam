@@ -4,7 +4,7 @@ import gleam/list
 import gleam/otp/task
 
 pub fn main() {
-  let n = reverse(40, 1, [])
+  let n = reverse_traverse(400, 1, [])
   print(n)
   let l = collatz(n, 0)
   print(l)
@@ -19,13 +19,30 @@ pub fn collatz(n, l) {
   }
 }
 
-fn reverse(n: Int, c: Int, l: List(Int)) -> Int {
+pub fn reverse_guess(n: Int, c: Int, l: List(Int)) -> Int {
   case n {
     0 -> c
     _ -> {
       case c > 1 && { c - 1 } % 3 == 0 && !list.contains(l, { c - 1 } / 3) {
-        True -> reverse(n - 1, { c - 1 } / 3, [c, ..l])
-        False -> reverse(n - 1, c * 2, [c, ..l])
+        True -> reverse_guess(n - 1, { c - 1 } / 3, [c, ..l])
+        False -> reverse_guess(n - 1, c * 2, [c, ..l])
+      }
+    }
+  }
+}
+
+pub fn reverse_traverse(n: Int, c: Int, l: List(Int)) -> Int {
+  case n {
+    0 -> c
+    _ -> {
+      let t = task.async(fn() { reverse_traverse(n - 1, c * 2, [c, ..l]) })
+      case c > 1 && { c - 1 } % 3 == 0 && !list.contains(l, { c - 1 } / 3) {
+        True -> {
+          let o1 = reverse_traverse(n - 1, { c - 1 } / 3, [c, ..l])
+          let o2 = task.await(t, 1_000)
+          int.min(o1, o2)
+        }
+        False -> task.await(t, 1_000)
       }
     }
   }
